@@ -46,6 +46,29 @@ export default class Home extends React.Component {
     <ListItem key={i} title={item.eventName} bottomDivider />;
     // <View ></View> Add view with flexdirection row , which will have image and another view, this inner view will hold your eventId and event Name
     //When you click on this gotoNGOeventDetail
+    return (
+      <View>
+        <TouchableOpacity
+          style={{ flexDirection: "row" }}
+          onPress={() => {
+            this.props.navigation.navigate("NGOeventDetail");
+          }}
+        >
+          <Image source={item.eventImage} style={styles.img} />
+          <View
+            style={{
+              flex: 0.5,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "white", textAlign: "center" }}>
+              {item.eventName}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   render() {
@@ -110,17 +133,11 @@ export default class Home extends React.Component {
                 <Text style={{ fontSize: 20 }}>No event found</Text>
               </View>
             ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  this.renderItem();
-                }}
-              >
-                <FlatList
-                  keyExtractor={this.keyExtractor}
-                  data={this.state.previousEvents}
-                  renderItem={this.renderItem}
-                />
-              </TouchableOpacity>
+              <FlatList
+                keyExtractor={this.keyExtractor}
+                data={this.state.previousEvents}
+                renderItem={this.renderItem}
+              />
             )}
           </View>
         </View>
@@ -206,5 +223,12 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     elevation: 1,
+  },
+  img: {
+    width: "50%",
+    height: "100%",
+    resizeMode: "contain",
+    borderRadius: 10,
+    justifyContent: "center",
   },
 });
