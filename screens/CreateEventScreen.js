@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import * as React from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -10,12 +10,13 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  Avatar,
 } from "react-native";
 import firebase from "firebase";
 import db from "../config";
-import { Header, Icon } from "react-native-elements";
-export default class CreateEvent extends React.Component {
+import { Header, Icon, Avatar } from "react-native-elements";
+import * as ImagePicker from "expo-image-picker";
+import * as Permissions from "expo-permissions";
+export default class CreateEventScreen extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -24,14 +25,17 @@ export default class CreateEvent extends React.Component {
       eventName: "",
       eventDetails: "",
       minimumDonationAmount: "",
+      image: "#",
     };
   }
   createUniqueId() {
     return Math.random().toString(36).substring(7);
   }
-  submitEvent = () => {
+  submitEvent = async () => {
     var randomRequestId = this.createUniqueId();
-    db.collection("events").add({
+    await this.uploadImage(this.state.image, randomRequestId);
+    await db.collection("events").add({
+      eventImage: this.state.image,
       ngoId: this.state.ngoId,
       eventId: randomRequestId,
       eventName: this.state.eventName,
@@ -40,6 +44,52 @@ export default class CreateEvent extends React.Component {
     });
 
     Alert.alert("Event added successfully");
+  };
+
+  uploadImage = async (uri, imageName) => {
+    var response = await fetch(uri);
+    var blob = await response.blob();
+
+    var ref = firebase
+      .storage()
+      .ref()
+      .child("events/" + imageName);
+
+    return ref.put(blob).then((response) => {
+      this.fetchImage(imageName);
+    });
+  };
+
+  fetchImage = (imageName) => {
+    var storageRef = firebase
+      .storage()
+      .ref()
+      .child("events/" + imageName);
+
+    // Get the download URL
+    storageRef
+      .getDownloadURL()
+      .then((url) => {
+        this.setState({ image: url });
+      })
+      .catch((error) => {
+        this.setState({ image: "#" });
+      });
+  };
+
+  selectPicture = async () => {
+    const { cancelled, uri } = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!cancelled) {
+      this.setState({
+        image: uri,
+      });
+    }
   };
   render() {
     return (
@@ -71,13 +121,14 @@ export default class CreateEvent extends React.Component {
           backgroundColor="#eaf8fe"
         />
         <Avatar
-          size={150}
-          containerStyle={{ flex: 2, marginLeft: 130, marginTop: 10 }}
+          size={"xlarge"}
           rounded
           icon={{ name: "user", type: "font-awesome" }}
           source={{
-            uri: "https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg",
+            uri: this.state.image,
           }}
+          onPress={() => this.selectPicture()}
+          showEditButton
         />
 
         <View style={styles.modalContainer}>
