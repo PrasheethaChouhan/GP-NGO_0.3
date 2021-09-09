@@ -19,7 +19,7 @@ export default class NGOeventDetail extends React.Component {
     super();
     this.state = {
       ngoId: firebase.auth().currentUser.email,
-      previousEvents: [],
+      eventDetails: [],
     };
   }
 
@@ -39,7 +39,6 @@ export default class NGOeventDetail extends React.Component {
   componentDidMount() {
     this.getEvents();
   }
-  keyExtractor = (item, index) => index.toString();
 
   deleteEvent = () => {
     db.collection("events").delete({
@@ -99,11 +98,6 @@ export default class NGOeventDetail extends React.Component {
             style={styles.formTextInput}
             placeholder="Event Name"
             placeholderTextColor="white"
-            onChangeText={(e) => {
-              this.setState({
-                eventName: e,
-              });
-            }}
             value={this.state.eventName}
           />
           <TextInput
@@ -111,11 +105,6 @@ export default class NGOeventDetail extends React.Component {
             placeholder="Event Description"
             placeholderTextColor="white"
             multiline={true}
-            onChangeText={(e) => {
-              this.setState({
-                eventDetails: e,
-              });
-            }}
             value={this.state.eventDetails}
           />
           <TextInput
@@ -123,11 +112,6 @@ export default class NGOeventDetail extends React.Component {
             placeholder="Minimum Donation Amount"
             placeholderTextColor="white"
             keyboardType="numeric"
-            onChangeText={(e) => {
-              this.setState({
-                minimumDonationAmount: e,
-              });
-            }}
             value={this.state.minimumDonationAmount}
           />
 
@@ -138,7 +122,7 @@ export default class NGOeventDetail extends React.Component {
             }}
           >
             <Text style={{ color: "white", fontSize: 25, fontWeight: "bold" }}>
-              Create
+              Delete
             </Text>
           </TouchableOpacity>
         </View>
