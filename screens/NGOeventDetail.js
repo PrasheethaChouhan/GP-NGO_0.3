@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  FlatList,
 } from "react-native";
 import firebase from "firebase";
 import db from "../config";
@@ -40,6 +41,8 @@ export default class NGOeventDetail extends React.Component {
     this.getEvents();
   }
 
+  keyExtractor = (item, index) => index.toString();
+
   deleteEvent = () => {
     db.collection("events").delete({
       ngoId: this.state.ngoId,
@@ -50,6 +53,9 @@ export default class NGOeventDetail extends React.Component {
     });
 
     Alert.alert("Event deleted successfully");
+  };
+  renderItem = ({ item, i }) => {
+    <Image source={item.eventImage} style={styles.img} />;
   };
   render() {
     return (
@@ -80,6 +86,26 @@ export default class NGOeventDetail extends React.Component {
           }
           backgroundColor="#eaf8fe"
         />
+
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#1B2E0F",
+            color: "#82152b",
+          }}
+        >
+          {this.state.eventDetails.length === 0 ? (
+            <View style={styles.subContainer}>
+              <Text style={{ fontSize: 20 }}>No event found</Text>
+            </View>
+          ) : (
+            <FlatList
+              keyExtractor={this.keyExtractor}
+              data={this.state.previousEvents}
+              renderItem={this.renderItem}
+            />
+          )}
+        </View>
 
         <View style={styles.modalContainer}>
           <Text
