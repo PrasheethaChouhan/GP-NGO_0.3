@@ -14,49 +14,38 @@ import {
 } from "react-native";
 import firebase from "firebase";
 import db from "../config";
-import { Header, Icon } from "react-native-elements";
+import { Header, Icon, Avatar } from "react-native-elements";
 export default class NGOeventDetail extends React.Component {
   constructor() {
     super();
     this.state = {
       ngoId: firebase.auth().currentUser.email,
-      eventDetails: [],
+
+      eventId: this.props.navigation.getParam("eventDetails")["eventId"],
+      eventDetails:
+        this.props.navigation.getParam("eventDetails")["eventDetails"],
+      eventName: this.props.navigation.getParam("eventDetails")["eventName"],
+      eventImage: this.props.navigation.getParam("eventDetails")["eventImage"],
+      eventMinimumAmount:
+        this.props.navigation.getParam("eventDetails")["minimumDonationAmount"],
     };
   }
 
-  getEvents = () => {
-    var email = this.state.ngoId;
-    this.requestRef = db
-      .collection("events")
-      .where("ngoId", "==", email)
-      .onSnapshot((snapshot) => {
-        var previousEvents = snapshot.docs.map((document) => document.data());
-        this.setState({
-          previousEvents: previousEvents,
-        });
-      });
-  };
-
-  componentDidMount() {
-    this.getEvents();
-  }
-
-  keyExtractor = (item, index) => index.toString();
+  componentDidMount() {}
 
   deleteEvent = () => {
-    db.collection("events").delete({
-      ngoId: this.state.ngoId,
-      eventId: randomRequestId,
-      eventName: this.state.eventName,
-      eventDetails: this.state.eventDetails,
-      minimumDonationAmount: this.state.minimumDonationAmount,
-    });
+    db.collection("events")
+      .where("eventId", "==", this.state.eventId)
+      .get()
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          db.collection("events").doc(doc.id).delete();
+        });
+      });
 
     Alert.alert("Event deleted successfully");
   };
-  renderItem = ({ item, i }) => {
-    <Image source={item.eventImage} style={styles.img} />;
-  };
+
   render() {
     return (
       <View
@@ -87,39 +76,21 @@ export default class NGOeventDetail extends React.Component {
           backgroundColor="#eaf8fe"
         />
 
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "#1B2E0F",
-            color: "#82152b",
-          }}
-        >
-          {this.state.eventDetails.length === 0 ? (
-            <View style={styles.subContainer}>
-              <Text style={{ fontSize: 20 }}>No event found</Text>
-            </View>
-          ) : (
-            <FlatList
-              keyExtractor={this.keyExtractor}
-              data={this.state.previousEvents}
-              renderItem={this.renderItem}
-            />
-          )}
-        </View>
-
         <View style={styles.modalContainer}>
-          <Text
-            style={{
-              justifyContent: "center",
-              alignSelf: "center",
-              fontSize: 30,
-              color: "#73FA79",
-              marginTop: "-55%",
-              marginBottom: 30,
+          <Avatar
+            size={"xlarge"}
+            rounded
+            source={{
+              uri: this.state.eventImage,
             }}
-          >
-            Create your Event
-          </Text>
+          />
+          <TextInput
+            style={styles.formTextInput}
+            placeholder="EventId"
+            placeholderTextColor="white"
+            value={this.state.eventId}
+          />
+
           <TextInput
             style={styles.formTextInput}
             placeholder="Event Name"
@@ -138,7 +109,7 @@ export default class NGOeventDetail extends React.Component {
             placeholder="Minimum Donation Amount"
             placeholderTextColor="white"
             keyboardType="numeric"
-            value={this.state.minimumDonationAmount}
+            value={this.state.eventMinimumAmount}
           />
 
           <TouchableOpacity
