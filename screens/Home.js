@@ -31,10 +31,17 @@ export default class Home extends React.Component {
       .collection("events")
       .where("ngoId", "==", email)
       .onSnapshot((snapshot) => {
-        var previousEvents = snapshot.docs.map((document) => document.data());
-        this.setState({
-          previousEvents: previousEvents,
+        var dbpreviousEvents = [];
+
+        snapshot.docs.map((doc) => {
+          dbpreviousEvents.push(doc.data());
         });
+        console.log(dbpreviousEvents);
+
+        this.setState({
+          previousEvents: dbpreviousEvents,
+        });
+        console.log(this.state.previousEvents);
       });
   };
   componentDidMount() {
@@ -43,15 +50,14 @@ export default class Home extends React.Component {
   keyExtractor = (item, index) => index.toString();
 
   renderItem = ({ item, i }) => {
-    <ListItem key={i} title={item.eventName} bottomDivider />;
-    // <View ></View> Add view with flexdirection row , which will have image and another view, this inner view will hold your eventId and event Name
-    //When you click on this gotoNGOeventDetail
     return (
       <View>
         <TouchableOpacity
           style={{ flexDirection: "row" }}
           onPress={() => {
-            this.props.navigation.navigate("NGOeventDetail");
+            this.props.navigation.navigate("NGOeventDetail", {
+              eventDetails: item,
+            });
           }}
         >
           <Image source={item.eventImage} style={styles.img} />
@@ -64,6 +70,9 @@ export default class Home extends React.Component {
           >
             <Text style={{ color: "white", textAlign: "center" }}>
               {item.eventName}
+            </Text>
+            <Text style={{ color: "white", textAlign: "center" }}>
+              {item.eventId}
             </Text>
           </View>
         </TouchableOpacity>
@@ -226,7 +235,7 @@ const styles = StyleSheet.create({
   },
   img: {
     width: "50%",
-    height: "100%",
+    height: 100,
     resizeMode: "contain",
     borderRadius: 10,
     justifyContent: "center",
