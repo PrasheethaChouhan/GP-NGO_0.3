@@ -31,19 +31,26 @@ export default class CreateEventScreen extends React.Component {
   createUniqueId() {
     return Math.random().toString(36).substring(7);
   }
-  submitEvent = async () => {
+  submitEvent = async (uri) => {
     var randomRequestId = this.createUniqueId();
-    await this.uploadImage(this.state.image, randomRequestId);
-    await db.collection("events").add({
-      eventImage: this.state.image,
+
+    this.uploadImage(this.state.image, randomRequestId);
+    db.collection("events").add({
+      eventImage: uri,
       ngoId: this.state.ngoId,
       eventId: randomRequestId,
       eventName: this.state.eventName,
       eventDetails: this.state.eventDetails,
       minimumDonationAmount: this.state.minimumDonationAmount,
     });
-
-    Alert.alert("Event added successfully");
+    this.setState({
+      title: "",
+      time: "",
+      description: "",
+      city: "",
+      address: "",
+    });
+    return Alert.alert("Event added successfully");
   };
 
   uploadImage = async (uri, imageName) => {
@@ -56,11 +63,13 @@ export default class CreateEventScreen extends React.Component {
       .child("events/" + imageName);
 
     return ref.put(blob).then((response) => {
+      console.log("upload successful");
       this.fetchImage(imageName);
     });
   };
 
   fetchImage = (imageName) => {
+    console.log("fetchImage executed");
     var storageRef = firebase
       .storage()
       .ref()
@@ -70,9 +79,11 @@ export default class CreateEventScreen extends React.Component {
     storageRef
       .getDownloadURL()
       .then((url) => {
+        console.log("fetch successful" + url);
         this.setState({ image: url });
       })
       .catch((error) => {
+        console.log("fetch unsuccesfully");
         this.setState({ image: "#" });
       });
   };
@@ -123,7 +134,6 @@ export default class CreateEventScreen extends React.Component {
         <Avatar
           size={"xlarge"}
           rounded
-          icon={{ name: "user", type: "font-awesome" }}
           source={{
             uri: this.state.image,
           }}
@@ -183,7 +193,7 @@ export default class CreateEventScreen extends React.Component {
           <TouchableOpacity
             style={styles.donation2Button}
             onPress={() => {
-              this.submitEvent();
+              this.submitEvent(this.state.image);
             }}
           >
             <Text style={{ color: "white", fontSize: 25, fontWeight: "bold" }}>
